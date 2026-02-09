@@ -22,6 +22,8 @@ const FOCUS_MUSIC = [
     'https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3', // Lofi Study
     'https://cdn.pixabay.com/audio/2022/08/02/audio_4f0b29c9b7.mp3', // Chill Abstract
     'https://cdn.pixabay.com/audio/2022/03/15/audio_c8a7d0d1e8.mp3', // Lofi Chill
+    'https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3', // Fallback 1
+    'https://assets.mixkit.co/music/preview/mixkit-dreaming-big-31.mp3', // Fallback 2
 ];
 
 const GIFS = [
@@ -43,7 +45,7 @@ export default function PomodoroTimer() {
     const [message, setMessage] = useState<string>('');
     const [currentGif, setCurrentGif] = useState<string>(GIFS[0]);
     const [isPaused, setIsPaused] = useState(false); // New state to track explicit pause
-    const [isMusicMuted, setIsMusicMuted] = useState(false);
+    const [isMusicMuted, setIsMusicMuted] = useState(false); // Default to unmuted
     const [currentMusicIndex, setCurrentMusicIndex] = useState(0);
 
     const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -66,21 +68,42 @@ export default function PomodoroTimer() {
 
     const playBackgroundMusic = useCallback(() => {
         if (typeof window !== 'undefined' && !isMusicMuted) {
+            console.log('🎵 Attempting to play music, muted:', isMusicMuted);
+
             // If music exists and is paused, resume it
             if (musicRef.current) {
                 if (musicRef.current.paused) {
-                    musicRef.current.play().catch(() => console.log('Music playback blocked'));
+                    console.log('▶️ Resuming paused music');
+                    musicRef.current.play()
+                        .then(() => console.log('✅ Music resumed successfully'))
+                        .catch((err) => console.error('❌ Music resume failed:', err));
+                } else {
+                    console.log('✅ Music already playing');
                 }
-                // If already playing, do nothing (it's working fine)
             } else {
                 // Create new music instance
                 const randomIndex = Math.floor(Math.random() * FOCUS_MUSIC.length);
                 setCurrentMusicIndex(randomIndex);
+                console.log('🎼 Creating new music instance, track:', randomIndex);
+
                 musicRef.current = new Audio(FOCUS_MUSIC[randomIndex]);
                 musicRef.current.loop = true;
                 musicRef.current.volume = 0.3;
-                musicRef.current.play().catch(() => console.log('Music playback blocked'));
+
+                // Add event listeners for debugging
+                musicRef.current.addEventListener('loadeddata', () => {
+                    console.log('✅ Music loaded successfully');
+                });
+                musicRef.current.addEventListener('error', (e) => {
+                    console.error('❌ Music load error:', e);
+                });
+
+                musicRef.current.play()
+                    .then(() => console.log('✅ Music started successfully'))
+                    .catch((err) => console.error('❌ Music playback blocked:', err));
             }
+        } else {
+            console.log('🔇 Music muted or window not available');
         }
     }, [isMusicMuted]);
 
