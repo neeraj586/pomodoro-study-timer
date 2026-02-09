@@ -81,7 +81,14 @@ export default function PomodoroTimer() {
 
                             // Completion logic
                             playSound(SOUNDS.celebration);
-                            setMessage('acceptable. barely.');
+
+                            // Special message for first session
+                            if (newCount === 1) {
+                                setMessage("ok that actually counts. continue.");
+                            } else {
+                                setMessage('you cooked.');
+                            }
+
                             setTimeout(() => setMessage(''), 8000);
 
                             if (newCount % 4 === 0) {
@@ -113,7 +120,7 @@ export default function PomodoroTimer() {
             // Interruption/Pause logic
             if (mode === 'work' && timeLeft > 0 && timeLeft < MODES.work.time) {
                 playSound(SOUNDS.madiyan);
-                setMessage('MADIYAN MALA CHUMAKUM.');
+                setMessage('tragic focus drop.');
                 setIsFlashing(true);
                 setTimeout(() => {
                     setIsFlashing(false);
@@ -146,12 +153,12 @@ export default function PomodoroTimer() {
 
     const getCharacterStatus = () => {
         if (mode === 'work') {
-            if (!isActive && timeLeft === MODES.work.time) return "why are you here";
+            if (!isActive && timeLeft === MODES.work.time) return "locked in";
             if (isActive) return "locked in";
-            if (!isActive && timeLeft < MODES.work.time) return "why did you stop"; // Paused
+            if (!isActive && timeLeft < MODES.work.time) return "tragic focus drop"; // Paused
         }
-        if (mode === 'shortBreak' || mode === 'longBreak') return "brain empty";
-        return "why are you here";
+        if (mode === 'shortBreak' || mode === 'longBreak') return "we move";
+        return "locked in";
     };
 
     const progress = (1 - timeLeft / MODES[mode].time) * 100;
