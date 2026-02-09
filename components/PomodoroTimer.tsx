@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import styles from './PomodoroTimer.module.css';
 
 type Mode = 'work' | 'shortBreak' | 'longBreak';
@@ -8,7 +8,12 @@ type Mode = 'work' | 'shortBreak' | 'longBreak';
 const MODES: Record<Mode, { time: number; label: string; color: string }> = {
     work: { time: 25 * 60, label: 'Focus', color: 'var(--primary)' },
     shortBreak: { time: 5 * 60, label: 'Break', color: 'var(--secondary)' },
-    longBreak: { time: 15 * 60, label: 'Long Break', color: '#8e2de2' },
+    longBreak: { time: 15 * 60, label: 'Long Break', color: '#8b0000' }, // Darker red
+};
+
+const SOUNDS = {
+    firetruck: '/assets/freesound_community-firetruck-78910.mp3',
+    anthem: '/assets/liverpool_anthem_-_you_ll_never_walk_alone_(mp3.pm).mp3'
 };
 
 export default function PomodoroTimer() {
@@ -16,12 +21,20 @@ export default function PomodoroTimer() {
     const [timeLeft, setTimeLeft] = useState(MODES.work.time);
     const [isActive, setIsActive] = useState(false);
     const [sessionsCompleted, setSessionsCompleted] = useState(0);
+    const [isFlashing, setIsFlashing] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
 
-    const switchMode = useCallback((newMode: Mode) => {
-        setMode(newMode);
-        setTimeLeft(MODES[newMode].time);
-        setIsActive(false);
-    }, []);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+
+    const playSound = (src: string) => {
+        if (typeof window !== 'undefined') {
+            if (audioRef.current) {
+                audioRef.current.pause();
+            }
+            audioRef.current = new Audio(src);
+            audioRef.current.play().catch(() => console.log('Audio playback blocked'));
+        }
+    };
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -32,19 +45,21 @@ export default function PomodoroTimer() {
                     if (prev <= 1) {
                         setIsActive(false);
 
-                        // Play sound notification
-                        if (typeof window !== 'undefined') {
-                            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-                            audio.play().catch(() => console.log('Audio playback blocked'));
-                        }
-
                         // Determine next mode
                         if (mode === 'work') {
                             const newCount = sessionsCompleted + 1;
                             setSessionsCompleted(newCount);
+
+                            // 25 mins Focus complete logic
+                            playSound(SOUNDS.anthem);
+                            setShowSuccess(true);
+                            setTimeout(() => setShowSuccess(false), 5000);
+
                             if (newCount % 4 === 0) {
                                 setMode('longBreak');
                                 setTimeLeft(MODES.longBreak.time);
+                                // Long break starts: play fire engine
+                                playSound(SOUNDS.firetruck);
                             } else {
                                 setMode('shortBreak');
                                 setTimeLeft(MODES.shortBreak.time);
@@ -64,7 +79,19 @@ export default function PomodoroTimer() {
         return () => clearInterval(interval);
     }, [isActive, timeLeft, mode, sessionsCompleted]);
 
-    const toggleTimer = () => setIsActive(!isActive);
+    const toggleTimer = () => {
+        if (isActive) {
+            // Stopping before completion
+            if (mode === 'work' && timeLeft > 0 && timeLeft < MODES.work.time) {
+                playSound(SOUNDS.firetruck);
+                setIsFlashing(true);
+                setTimeout(() => setIsFlashing(false), 1000);
+            }
+            setIsActive(false);
+        } else {
+            setIsActive(true);
+        }
+    };
 
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
@@ -76,8 +103,7 @@ export default function PomodoroTimer() {
     const strokeDashoffset = 955 - (955 * progress) / 100;
 
     return (
-        <div className={`${styles.container} glass animate-fade-in`}>
-            {/* Mode selection is hidden as per user request */}
+        <div className={`${styles.container} glass animate-fade-in ${isFlashing ? 'animate-flash-red' : ''}`}>
 
             <div
                 className={styles.timerCircle}
@@ -103,13 +129,18 @@ export default function PomodoroTimer() {
                 </div>
             </div>
 
+            {showSuccess && (
+                <div style={{ color: 'var(--accent)', fontWeight: 'bold', margin: '1rem 0' }}>
+                    GOALLLLL! FOCUS COMPLETE!
+                </div>
+            )}
+
             <div className={styles.controls}>
                 <button className={styles.mainButton} onClick={toggleTimer}>
                     {isActive ? 'pause' : 'start'}
                 </button>
             </div>
 
-            {/* Added a small indicator for session progress */}
             {sessionsCompleted > 0 && (
                 <div style={{ fontSize: '0.8rem', opacity: 0.4 }}>
                     Sessions completed: {sessionsCompleted}
