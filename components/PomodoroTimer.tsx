@@ -67,56 +67,31 @@ export default function PomodoroTimer() {
     };
 
     const playBackgroundMusic = useCallback(() => {
-        if (typeof window !== 'undefined' && !isMusicMuted) {
-            console.log('🎵 Attempting to play music, muted:', isMusicMuted);
-
-            // If music exists and is paused, resume it
-            if (musicRef.current) {
-                if (musicRef.current.paused) {
-                    console.log('▶️ Resuming paused music');
-                    musicRef.current.play()
-                        .then(() => console.log('✅ Music resumed successfully'))
-                        .catch((err) => console.error('❌ Music resume failed:', err));
-                } else {
-                    console.log('✅ Music already playing');
-                }
-            } else {
-                // Create new music instance
-                const randomIndex = Math.floor(Math.random() * FOCUS_MUSIC.length);
-                setCurrentMusicIndex(randomIndex);
-                console.log('🎼 Creating new music instance, track:', randomIndex);
-
-                musicRef.current = new Audio(FOCUS_MUSIC[randomIndex]);
-                musicRef.current.loop = true;
-                musicRef.current.volume = 0.3;
-
-                // Add event listeners for debugging
-                musicRef.current.addEventListener('loadeddata', () => {
-                    console.log('✅ Music loaded successfully');
-                });
-                musicRef.current.addEventListener('error', (e) => {
-                    console.error('❌ Music load error:', e);
-                });
-
-                musicRef.current.play()
-                    .then(() => console.log('✅ Music started successfully'))
-                    .catch((err) => console.error('❌ Music playback blocked:', err));
-            }
-        } else {
-            console.log('🔇 Music muted or window not available');
+        console.log('🎵 playBackgroundMusic called, muted:', isMusicMuted);
+        if (!isMusicMuted && musicRef.current) {
+            const randomIndex = Math.floor(Math.random() * FOCUS_MUSIC.length);
+            setCurrentMusicIndex(randomIndex);
+            musicRef.current.src = FOCUS_MUSIC[randomIndex];
+            musicRef.current.load();
+            console.log('🎼 Loading track:', randomIndex, FOCUS_MUSIC[randomIndex]);
+            musicRef.current.play()
+                .then(() => console.log('✅ Music playing!'))
+                .catch((err) => console.error('❌ Play failed:', err));
         }
     }, [isMusicMuted]);
 
     const pauseBackgroundMusic = useCallback(() => {
         if (musicRef.current && !musicRef.current.paused) {
+            console.log('⏸️ Pausing music');
             musicRef.current.pause();
         }
     }, []);
 
     const stopBackgroundMusic = useCallback(() => {
         if (musicRef.current) {
+            console.log('⏹️ Stopping music');
             musicRef.current.pause();
-            musicRef.current = null;
+            musicRef.current.currentTime = 0;
         }
     }, []);
 
@@ -361,6 +336,17 @@ export default function PomodoroTimer() {
             <div className={styles.message}>
                 {message}
             </div>
+
+            {/* Hidden audio element for background music */}
+            <audio
+                ref={musicRef}
+                loop
+                style={{ display: 'none' }}
+                onLoadedData={() => console.log('🎵 Audio loaded')}
+                onPlay={() => console.log('▶️ Audio playing')}
+                onPause={() => console.log('⏸️ Audio paused')}
+                onError={(e) => console.error('❌ Audio error:', e)}
+            />
         </div>
     );
 }
