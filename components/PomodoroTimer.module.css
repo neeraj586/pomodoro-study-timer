@@ -19,8 +19,23 @@
     align-items: center;
     justify-content: center;
     position: relative;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.4);
     border: 2px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    /* Ensure GIF stays within circle */
+}
+
+.backgroundGif {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.2;
+    /* Subtle background presence */
+    z-index: 0;
+    pointer-events: none;
 }
 
 .timerDisplay {

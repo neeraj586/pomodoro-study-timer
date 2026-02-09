@@ -16,6 +16,16 @@ const SOUNDS = {
     celebration: '/assets/Celebration.mp3',
 };
 
+const GIFS = [
+    '/gifs/2.gif',
+    '/gifs/3.gif',
+    '/gifs/4.gif',
+    '/gifs/5.gif',
+    '/gifs/6.gif',
+    '/gifs/7.gif',
+    '/gifs/kermit-typing.gif'
+];
+
 export default function PomodoroTimer() {
     const [mode, setMode] = useState<Mode>('work');
     const [timeLeft, setTimeLeft] = useState(MODES.work.time);
@@ -23,8 +33,14 @@ export default function PomodoroTimer() {
     const [sessionsCompleted, setSessionsCompleted] = useState(0);
     const [isFlashing, setIsFlashing] = useState(false);
     const [message, setMessage] = useState<string>('');
+    const [currentGif, setCurrentGif] = useState<string>(GIFS[0]);
 
     const audioRef = useRef<HTMLAudioElement | null>(null);
+
+    const pickRandomGif = useCallback(() => {
+        const randomIndex = Math.floor(Math.random() * GIFS.length);
+        setCurrentGif(GIFS[randomIndex]);
+    }, []);
 
     const playSound = (src: string) => {
         if (typeof window !== 'undefined') {
@@ -66,6 +82,7 @@ export default function PomodoroTimer() {
                         } else {
                             setMode('work');
                             setTimeLeft(MODES.work.time);
+                            pickRandomGif(); // New GIF for new focus session
                         }
 
                         return 0;
@@ -76,7 +93,7 @@ export default function PomodoroTimer() {
         }
 
         return () => clearInterval(interval);
-    }, [isActive, timeLeft, mode, sessionsCompleted]);
+    }, [isActive, timeLeft, mode, sessionsCompleted, pickRandomGif]);
 
     const toggleTimer = () => {
         if (isActive) {
@@ -92,10 +109,14 @@ export default function PomodoroTimer() {
             }
             setIsActive(false);
         } else {
-            // Stop any playing sound when starting/resuming
+            // Resuming or starting
             if (audioRef.current) {
                 audioRef.current.pause();
                 audioRef.current.currentTime = 0;
+            }
+            // If starting a fresh focus session
+            if (mode === 'work' && timeLeft === MODES.work.time) {
+                pickRandomGif();
             }
             setIsActive(true);
             setMessage('');
@@ -115,6 +136,9 @@ export default function PomodoroTimer() {
         <div className={`${styles.container} glass animate-fade-in ${isFlashing ? 'animate-flash-red' : ''}`}>
 
             <div className={styles.timerCircle}>
+                {isActive && mode === 'work' && (
+                    <img src={currentGif} alt="Focus Background" className={styles.backgroundGif} />
+                )}
                 <svg className={styles.progressRing}>
                     <circle
                         className={styles.progressPath}
@@ -126,8 +150,8 @@ export default function PomodoroTimer() {
                         strokeDashoffset={strokeDashoffset}
                     />
                 </svg>
-                <span className={styles.statusText}>{MODES[mode].label}</span>
-                <div className={styles.timerDisplay}>
+                <span className={styles.statusText} style={{ position: 'relative', zIndex: 1 }}>{MODES[mode].label}</span>
+                <div className={styles.timerDisplay} style={{ position: 'relative', zIndex: 1 }}>
                     {formatTime(timeLeft)}
                 </div>
             </div>
