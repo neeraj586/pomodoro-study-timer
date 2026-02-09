@@ -81,7 +81,7 @@ export default function PomodoroTimer() {
 
                             // Completion logic
                             playSound(SOUNDS.celebration);
-                            setMessage('NINGALITHU KANUKAAA..YOU ARE A GENIUS. you did not mess it up.');
+                            setMessage('acceptable. barely.');
                             setTimeout(() => setMessage(''), 8000);
 
                             if (newCount % 4 === 0) {
@@ -144,6 +144,16 @@ export default function PomodoroTimer() {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
+    const getCharacterStatus = () => {
+        if (mode === 'work') {
+            if (!isActive && timeLeft === MODES.work.time) return "why are you here";
+            if (isActive) return "locked in";
+            if (!isActive && timeLeft < MODES.work.time) return "why did you stop"; // Paused
+        }
+        if (mode === 'shortBreak' || mode === 'longBreak') return "brain empty";
+        return "why are you here";
+    };
+
     const progress = (1 - timeLeft / MODES[mode].time) * 100;
     const strokeDashoffset = 955 - (955 * progress) / 100; // 955 is approx circumference
 
@@ -171,7 +181,7 @@ export default function PomodoroTimer() {
 
                 {/* Content Overlay */}
                 <div className={styles.contentOverlay}>
-                    <span className={styles.statusText}>{MODES[mode].label}</span>
+                    <span className={styles.statusText}>{getCharacterStatus()}</span>
                     <div className={styles.timerDisplay}>
                         {formatTime(timeLeft)}
                     </div>
