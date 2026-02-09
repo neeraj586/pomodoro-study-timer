@@ -1,20 +1,15 @@
 :root {
-  --background: #4a0404;
-  /* Dark Maroon */
+  --background: #004d00;
+  /* Dark Green - "something around green" */
   --foreground: #fefefe;
-  /* Off-white */
   --primary: #c53030;
-  /* Lighter red for button */
   --card-bg: rgba(255, 255, 255, 0.05);
   --card-border: rgba(255, 255, 255, 0.1);
+  --red-theme: #4a0404;
+  /* Store red theme value */
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
+/* Base state: Green */
 body {
   color: var(--foreground);
   background: var(--background);
@@ -25,6 +20,19 @@ body {
   justify-content: center;
   overflow-x: hidden;
   font-family: inherit;
+  transition: background-color 0.5s ease;
+  /* Smooth transition */
+}
+
+/* Paused state: Red */
+body.state-paused {
+  background: var(--red-theme);
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 }
 
 button {

@@ -20,9 +20,8 @@
     justify-content: center;
     position: relative;
     background: rgba(0, 0, 0, 0.4);
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
     overflow: hidden;
-    /* Ensure GIF stays within circle */
 }
 
 .backgroundGif {
@@ -32,19 +31,10 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0.2;
-    /* Subtle background presence */
+    opacity: 0.3;
+    /* Adjusted opacity to blend */
     z-index: 0;
     pointer-events: none;
-}
-
-.timerDisplay {
-    font-size: 5rem;
-    font-weight: 700;
-    letter-spacing: -2px;
-    font-variant-numeric: tabular-nums;
-    margin-bottom: 0.5rem;
-    color: var(--foreground);
 }
 
 .progressRing {
@@ -64,33 +54,60 @@
     transition: stroke-dashoffset 0.3s linear;
 }
 
-.controls {
+/* New overlay for content inside circle */
+.contentOverlay {
+    position: relative;
+    z-index: 2;
     display: flex;
-    gap: 1.5rem;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
 }
 
-.mainButton {
-    padding: 1rem 3rem;
-    border-radius: 12px;
-    font-size: 1.1rem;
+.timerDisplay {
+    font-size: 4rem;
+    /* Adjusted for space */
     font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: lowercase;
-    background: var(--primary);
+    letter-spacing: -2px;
+    font-variant-numeric: tabular-nums;
+    margin: 0.2rem 0;
     color: var(--foreground);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.mainButton:hover {
-    filter: brightness(1.1);
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    /* Better readability over GIF */
 }
 
 .statusText {
-    font-size: 0.9rem;
-    text-transform: lowercase;
+    font-size: 0.8rem;
+    text-transform: uppercase;
     letter-spacing: 2px;
-    opacity: 0.7;
+    opacity: 0.9;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.iconButton {
+    background: transparent;
+    color: var(--foreground);
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+.iconButton:hover {
+    transform: scale(1.1);
+    opacity: 0.9;
+}
+
+.iconButton svg {
+    display: block;
+    width: 48px;
+    height: 48px;
 }
 
 .message {
@@ -100,4 +117,5 @@
     padding: 1rem;
     color: #fff;
     min-height: 4rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
