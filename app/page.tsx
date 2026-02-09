@@ -12,7 +12,7 @@ export default function Home() {
       <PomodoroTimer />
 
       <footer className={styles.footer}>
-        <p>© {new Date().getFullYear()} FocusFlow. Designed for excellence.</p>
+        <p>© 2026 Padippi</p>
       </footer>
     </main>
   );
