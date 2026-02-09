@@ -55,7 +55,7 @@ export default function PomodoroTimer() {
     }, []);
 
     const playSound = (src: string) => {
-        if (typeof window !== 'undefined') {
+        if (typeof window !== 'undefined' && !isMusicMuted) {
             if (audioRef.current) {
                 audioRef.current.pause();
             }
@@ -66,17 +66,26 @@ export default function PomodoroTimer() {
 
     const playBackgroundMusic = useCallback(() => {
         if (typeof window !== 'undefined' && !isMusicMuted) {
-            if (musicRef.current) {
-                musicRef.current.pause();
+            // If music is already playing, just resume it
+            if (musicRef.current && musicRef.current.paused) {
+                musicRef.current.play().catch(() => console.log('Music playback blocked'));
+            } else if (!musicRef.current) {
+                // Create new music instance only if none exists
+                const randomIndex = Math.floor(Math.random() * FOCUS_MUSIC.length);
+                setCurrentMusicIndex(randomIndex);
+                musicRef.current = new Audio(FOCUS_MUSIC[randomIndex]);
+                musicRef.current.loop = true;
+                musicRef.current.volume = 0.3; // Set to 30% volume
+                musicRef.current.play().catch(() => console.log('Music playback blocked'));
             }
-            const randomIndex = Math.floor(Math.random() * FOCUS_MUSIC.length);
-            setCurrentMusicIndex(randomIndex);
-            musicRef.current = new Audio(FOCUS_MUSIC[randomIndex]);
-            musicRef.current.loop = true;
-            musicRef.current.volume = 0.3; // Set to 30% volume
-            musicRef.current.play().catch(() => console.log('Music playback blocked'));
         }
     }, [isMusicMuted]);
+
+    const pauseBackgroundMusic = useCallback(() => {
+        if (musicRef.current && !musicRef.current.paused) {
+            musicRef.current.pause();
+        }
+    }, []);
 
     const stopBackgroundMusic = useCallback(() => {
         if (musicRef.current) {
@@ -109,14 +118,21 @@ export default function PomodoroTimer() {
     useEffect(() => {
         if (isActive && mode === 'work' && !isMusicMuted) {
             playBackgroundMusic();
+        } else if (!isActive && mode === 'work') {
+            // Pause (not stop) when paused so we can resume
+            pauseBackgroundMusic();
         } else {
+            // Stop completely when switching modes
             stopBackgroundMusic();
         }
 
         return () => {
-            stopBackgroundMusic();
+            // Only stop on unmount or mode change
+            if (mode !== 'work') {
+                stopBackgroundMusic();
+            }
         };
-    }, [isActive, mode, isMusicMuted, playBackgroundMusic, stopBackgroundMusic]);
+    }, [isActive, mode, isMusicMuted, playBackgroundMusic, pauseBackgroundMusic, stopBackgroundMusic]);
 
 
     useEffect(() => {
