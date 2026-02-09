@@ -1,15 +1,12 @@
 :root {
-  --background: #0d0d12;
-  --foreground: #f0f0f5;
-  --primary: #ff5f6d;
-  --primary-glow: rgba(255, 95, 109, 0.4);
-  --secondary: #4facfe;
-  --secondary-glow: rgba(79, 172, 254, 0.4);
-  --accent: #ffc371;
-  --card-bg: rgba(255, 255, 255, 0.03);
-  --card-border: rgba(255, 255, 255, 0.08);
-  --glass-bg: rgba(13, 13, 18, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --background: #4a0404;
+  /* Dark Maroon */
+  --foreground: #fefefe;
+  /* Off-white */
+  --primary: #c53030;
+  /* Lighter red for button */
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --card-border: rgba(255, 255, 255, 0.1);
 }
 
 * {
@@ -27,20 +24,7 @@ body {
   align-items: center;
   justify-content: center;
   overflow-x: hidden;
-  position: relative;
-}
-
-body::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle at 50% 50%, rgba(255, 95, 109, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(79, 172, 254, 0.05) 0%, transparent 40%);
-  pointer-events: none;
-  z-index: -1;
+  font-family: inherit;
 }
 
 button {
@@ -48,38 +32,21 @@ button {
   border: none;
   background: none;
   font-family: inherit;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
 }
 
 /* Animations */
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-
-  50% {
-    transform: scale(1.05);
-    opacity: 0.8;
-  }
-
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
 @keyframes flashRed {
   0% {
-    background-color: transparent;
+    opacity: 1;
   }
 
   50% {
-    background-color: rgba(255, 0, 0, 0.4);
+    opacity: 0.5;
   }
 
   100% {
-    background-color: transparent;
+    opacity: 1;
   }
 }
 
@@ -110,19 +77,4 @@ button {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--card-border);
   border-radius: 24px;
-}
-
-/* Utility for text gradients */
-.text-gradient-primary {
-  background: linear-gradient(135deg, #ff5f6d 0%, #ffc371 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.text-gradient-secondary {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
 }

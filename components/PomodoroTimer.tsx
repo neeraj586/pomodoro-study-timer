@@ -6,15 +6,14 @@ import styles from './PomodoroTimer.module.css';
 type Mode = 'work' | 'shortBreak' | 'longBreak';
 
 const MODES: Record<Mode, { time: number; label: string; color: string }> = {
-    work: { time: 25 * 60, label: 'Focus', color: 'var(--primary)' },
-    shortBreak: { time: 5 * 60, label: 'Break', color: 'var(--secondary)' },
-    longBreak: { time: 15 * 60, label: 'Long Break', color: '#8b0000' }, // Darker red
+    work: { time: 25 * 60, label: 'focus', color: '#ff4d4d' },
+    shortBreak: { time: 5 * 60, label: 'break', color: '#ff4d4d' },
+    longBreak: { time: 15 * 60, label: 'long break', color: '#ff4d4d' },
 };
 
 const SOUNDS = {
     madiyan: '/assets/Trimmed_Madiyan.mp3',
     celebration: '/assets/Celebration.mp3',
-    firetruck: '/assets/freesound_community-firetruck-78910.mp3'
 };
 
 export default function PomodoroTimer() {
@@ -23,7 +22,7 @@ export default function PomodoroTimer() {
     const [isActive, setIsActive] = useState(false);
     const [sessionsCompleted, setSessionsCompleted] = useState(0);
     const [isFlashing, setIsFlashing] = useState(false);
-    const [showSuccess, setShowSuccess] = useState(false);
+    const [message, setMessage] = useState<string>('');
 
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -51,16 +50,15 @@ export default function PomodoroTimer() {
                             const newCount = sessionsCompleted + 1;
                             setSessionsCompleted(newCount);
 
-                            // 25 mins Focus complete logic
+                            // Completion logic
                             playSound(SOUNDS.celebration);
-                            setShowSuccess(true);
-                            setTimeout(() => setShowSuccess(false), 5000);
+                            setMessage('NINGALITHU KANUKAAA..YOU ARE A GENIUS. you did not mess it up.');
+                            setTimeout(() => setMessage(''), 8000);
 
                             if (newCount % 4 === 0) {
                                 setMode('longBreak');
                                 setTimeLeft(MODES.longBreak.time);
-                                // Long break starts: play fire engine
-                                playSound(SOUNDS.firetruck);
+                                setMessage('MADIYAN MALA CHUMANNU CHAAKUM.');
                             } else {
                                 setMode('shortBreak');
                                 setTimeLeft(MODES.shortBreak.time);
@@ -82,15 +80,20 @@ export default function PomodoroTimer() {
 
     const toggleTimer = () => {
         if (isActive) {
-            // Stopping before completion
+            // Interruption logic
             if (mode === 'work' && timeLeft > 0 && timeLeft < MODES.work.time) {
                 playSound(SOUNDS.madiyan);
+                setMessage('MADIYAN MALA CHUMAKUM.');
                 setIsFlashing(true);
-                setTimeout(() => setIsFlashing(false), 1000);
+                setTimeout(() => {
+                    setIsFlashing(false);
+                    setMessage('');
+                }, 3000);
             }
             setIsActive(false);
         } else {
             setIsActive(true);
+            setMessage('');
         }
     };
 
@@ -106,20 +109,14 @@ export default function PomodoroTimer() {
     return (
         <div className={`${styles.container} glass animate-fade-in ${isFlashing ? 'animate-flash-red' : ''}`}>
 
-            <div
-                className={styles.timerCircle}
-                style={{
-                    borderColor: `${MODES[mode].color}33`,
-                    boxShadow: `0 0 60px ${MODES[mode].color}22`
-                }}
-            >
+            <div className={styles.timerCircle}>
                 <svg className={styles.progressRing}>
                     <circle
                         className={styles.progressPath}
                         cx="152"
                         cy="152"
                         r="150"
-                        stroke={MODES[mode].color}
+                        stroke="#ff4d4d"
                         strokeDasharray="955"
                         strokeDashoffset={strokeDashoffset}
                     />
@@ -130,11 +127,9 @@ export default function PomodoroTimer() {
                 </div>
             </div>
 
-            {showSuccess && (
-                <div style={{ color: 'var(--accent)', fontWeight: 'bold', margin: '1rem 0' }}>
-                    GOALLLLL! FOCUS COMPLETE!
-                </div>
-            )}
+            <div className={styles.message}>
+                {message}
+            </div>
 
             <div className={styles.controls}>
                 <button className={styles.mainButton} onClick={toggleTimer}>
@@ -143,8 +138,8 @@ export default function PomodoroTimer() {
             </div>
 
             {sessionsCompleted > 0 && (
-                <div style={{ fontSize: '0.8rem', opacity: 0.4 }}>
-                    Sessions completed: {sessionsCompleted}
+                <div style={{ fontSize: '0.8rem', opacity: 0.6, marginTop: '1rem' }}>
+                    sessions complete: {sessionsCompleted}
                 </div>
             )}
         </div>
