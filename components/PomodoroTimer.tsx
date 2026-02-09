@@ -16,14 +16,14 @@ const SOUNDS = {
     celebration: '/assets/Celebration.mp3',
 };
 
-// Free royalty-free lofi music - you can replace these with your own tracks
-// To add your own music: place MP3 files in public/assets/music/ and reference them here
+// Free royalty-free lofi music that allows hotlinking
+// Mixkit allows direct linking from any domain
 const FOCUS_MUSIC = [
-    'https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3', // Lofi Study
-    'https://cdn.pixabay.com/audio/2022/08/02/audio_4f0b29c9b7.mp3', // Chill Abstract
-    'https://cdn.pixabay.com/audio/2022/03/15/audio_c8a7d0d1e8.mp3', // Lofi Chill
-    'https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3', // Fallback 1
-    'https://assets.mixkit.co/music/preview/mixkit-dreaming-big-31.mp3', // Fallback 2
+    'https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3',
+    'https://assets.mixkit.co/music/preview/mixkit-dreaming-big-31.mp3',
+    'https://assets.mixkit.co/music/preview/mixkit-a-very-happy-christmas-897.mp3',
+    'https://assets.mixkit.co/music/preview/mixkit-hip-hop-02-738.mp3',
+    'https://assets.mixkit.co/music/preview/mixkit-lofi-study-112.mp3',
 ];
 
 const GIFS = [
