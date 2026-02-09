@@ -5,8 +5,8 @@ export default function Home() {
   return (
     <main className={styles.main}>
       <header className={styles.header}>
-        <h1 className="text-gradient-primary">FocusFlow</h1>
-        <p>Your sanctuary for deep work</p>
+        <h1 className="text-gradient-primary">focus for 25 minutes. don’t ruin it.</h1>
+        <p>your character will judge you silently.</p>
       </header>
 
       <PomodoroTimer />

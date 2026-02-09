@@ -7,7 +7,7 @@ type Mode = 'work' | 'shortBreak' | 'longBreak';
 
 const MODES: Record<Mode, { time: number; label: string; color: string }> = {
     work: { time: 25 * 60, label: 'Focus', color: 'var(--primary)' },
-    shortBreak: { time: 5 * 60, label: 'Short Break', color: 'var(--secondary)' },
+    shortBreak: { time: 5 * 60, label: 'Break', color: 'var(--secondary)' },
     longBreak: { time: 15 * 60, label: 'Long Break', color: '#8e2de2' },
 };
 
@@ -15,6 +15,7 @@ export default function PomodoroTimer() {
     const [mode, setMode] = useState<Mode>('work');
     const [timeLeft, setTimeLeft] = useState(MODES.work.time);
     const [isActive, setIsActive] = useState(false);
+    const [sessionsCompleted, setSessionsCompleted] = useState(0);
 
     const switchMode = useCallback((newMode: Mode) => {
         setMode(newMode);
@@ -30,11 +31,29 @@ export default function PomodoroTimer() {
                 setTimeLeft((prev) => {
                     if (prev <= 1) {
                         setIsActive(false);
+
                         // Play sound notification
                         if (typeof window !== 'undefined') {
                             const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
                             audio.play().catch(() => console.log('Audio playback blocked'));
                         }
+
+                        // Determine next mode
+                        if (mode === 'work') {
+                            const newCount = sessionsCompleted + 1;
+                            setSessionsCompleted(newCount);
+                            if (newCount % 4 === 0) {
+                                setMode('longBreak');
+                                setTimeLeft(MODES.longBreak.time);
+                            } else {
+                                setMode('shortBreak');
+                                setTimeLeft(MODES.shortBreak.time);
+                            }
+                        } else {
+                            setMode('work');
+                            setTimeLeft(MODES.work.time);
+                        }
+
                         return 0;
                     }
                     return prev - 1;
@@ -43,15 +62,9 @@ export default function PomodoroTimer() {
         }
 
         return () => clearInterval(interval);
-    }, [isActive, timeLeft]);
-
+    }, [isActive, timeLeft, mode, sessionsCompleted]);
 
     const toggleTimer = () => setIsActive(!isActive);
-
-    const resetTimer = () => {
-        setIsActive(false);
-        setTimeLeft(MODES[mode].time);
-    };
 
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
@@ -60,21 +73,11 @@ export default function PomodoroTimer() {
     };
 
     const progress = (1 - timeLeft / MODES[mode].time) * 100;
-    const strokeDashoffset = 955 - (955 * progress) / 100; // 955 is approx circumference of 304px circle (r=152)
+    const strokeDashoffset = 955 - (955 * progress) / 100;
 
     return (
         <div className={`${styles.container} glass animate-fade-in`}>
-            <div className={styles.modeSelector}>
-                {(Object.keys(MODES) as Mode[]).map((m) => (
-                    <button
-                        key={m}
-                        className={`${styles.modeButton} ${mode === m ? styles.modeButtonActive : ''}`}
-                        onClick={() => switchMode(m)}
-                    >
-                        {MODES[m].label}
-                    </button>
-                ))}
-            </div>
+            {/* Mode selection is hidden as per user request */}
 
             <div
                 className={styles.timerCircle}
@@ -102,15 +105,16 @@ export default function PomodoroTimer() {
 
             <div className={styles.controls}>
                 <button className={styles.mainButton} onClick={toggleTimer}>
-                    {isActive ? 'Pause' : 'Start'}
-                </button>
-                <button className={styles.secondaryButton} onClick={resetTimer} title="Reset">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M23 4v6h-6" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-                    </svg>
+                    {isActive ? 'pause' : 'start'}
                 </button>
             </div>
+
+            {/* Added a small indicator for session progress */}
+            {sessionsCompleted > 0 && (
+                <div style={{ fontSize: '0.8rem', opacity: 0.4 }}>
+                    Sessions completed: {sessionsCompleted}
+                </div>
+            )}
         </div>
     );
 }
-
