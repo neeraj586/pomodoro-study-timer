@@ -12,8 +12,9 @@ const MODES: Record<Mode, { time: number; label: string; color: string }> = {
 };
 
 const SOUNDS = {
-    firetruck: '/assets/freesound_community-firetruck-78910.mp3',
-    anthem: '/assets/liverpool_anthem_-_you_ll_never_walk_alone_(mp3.pm).mp3'
+    madiyan: '/assets/Trimmed_Madiyan.mp3',
+    celebration: '/assets/Celebration.mp3',
+    firetruck: '/assets/freesound_community-firetruck-78910.mp3'
 };
 
 export default function PomodoroTimer() {
@@ -51,7 +52,7 @@ export default function PomodoroTimer() {
                             setSessionsCompleted(newCount);
 
                             // 25 mins Focus complete logic
-                            playSound(SOUNDS.anthem);
+                            playSound(SOUNDS.celebration);
                             setShowSuccess(true);
                             setTimeout(() => setShowSuccess(false), 5000);
 
@@ -83,7 +84,7 @@ export default function PomodoroTimer() {
         if (isActive) {
             // Stopping before completion
             if (mode === 'work' && timeLeft > 0 && timeLeft < MODES.work.time) {
-                playSound(SOUNDS.firetruck);
+                playSound(SOUNDS.madiyan);
                 setIsFlashing(true);
                 setTimeout(() => setIsFlashing(false), 1000);
             }
