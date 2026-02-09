@@ -92,6 +92,11 @@ export default function PomodoroTimer() {
             }
             setIsActive(false);
         } else {
+            // Stop any playing sound when starting/resuming
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.currentTime = 0;
+            }
             setIsActive(true);
             setMessage('');
         }
