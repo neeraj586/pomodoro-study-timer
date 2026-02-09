@@ -66,16 +66,19 @@ export default function PomodoroTimer() {
 
     const playBackgroundMusic = useCallback(() => {
         if (typeof window !== 'undefined' && !isMusicMuted) {
-            // If music is already playing, just resume it
-            if (musicRef.current && musicRef.current.paused) {
-                musicRef.current.play().catch(() => console.log('Music playback blocked'));
-            } else if (!musicRef.current) {
-                // Create new music instance only if none exists
+            // If music exists and is paused, resume it
+            if (musicRef.current) {
+                if (musicRef.current.paused) {
+                    musicRef.current.play().catch(() => console.log('Music playback blocked'));
+                }
+                // If already playing, do nothing (it's working fine)
+            } else {
+                // Create new music instance
                 const randomIndex = Math.floor(Math.random() * FOCUS_MUSIC.length);
                 setCurrentMusicIndex(randomIndex);
                 musicRef.current = new Audio(FOCUS_MUSIC[randomIndex]);
                 musicRef.current.loop = true;
-                musicRef.current.volume = 0.3; // Set to 30% volume
+                musicRef.current.volume = 0.3;
                 musicRef.current.play().catch(() => console.log('Music playback blocked'));
             }
         }
@@ -95,11 +98,17 @@ export default function PomodoroTimer() {
     }, []);
 
     const toggleMusicMute = () => {
-        setIsMusicMuted(!isMusicMuted);
-        if (!isMusicMuted) {
+        const newMuteState = !isMusicMuted;
+        setIsMusicMuted(newMuteState);
+
+        if (newMuteState) {
+            // Muting - stop music
             stopBackgroundMusic();
-        } else if (isActive && mode === 'work') {
-            playBackgroundMusic();
+        } else {
+            // Unmuting - start music if in active work mode
+            if (isActive && mode === 'work') {
+                playBackgroundMusic();
+            }
         }
     };
 
@@ -118,20 +127,13 @@ export default function PomodoroTimer() {
     useEffect(() => {
         if (isActive && mode === 'work' && !isMusicMuted) {
             playBackgroundMusic();
-        } else if (!isActive && mode === 'work') {
-            // Pause (not stop) when paused so we can resume
+        } else if (!isActive && mode === 'work' && !isMusicMuted) {
+            // Pause when timer is paused (so we can resume)
             pauseBackgroundMusic();
-        } else {
-            // Stop completely when switching modes
+        } else if (mode !== 'work') {
+            // Stop completely when not in work mode
             stopBackgroundMusic();
         }
-
-        return () => {
-            // Only stop on unmount or mode change
-            if (mode !== 'work') {
-                stopBackgroundMusic();
-            }
-        };
     }, [isActive, mode, isMusicMuted, playBackgroundMusic, pauseBackgroundMusic, stopBackgroundMusic]);
 
 
