@@ -16,6 +16,13 @@ const SOUNDS = {
     celebration: '/assets/Celebration.mp3',
 };
 
+// Placeholder URLs - replace with actual lofi music tracks
+const FOCUS_MUSIC = [
+    'https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3',
+    'https://assets.mixkit.co/music/preview/mixkit-dreaming-big-31.mp3',
+    'https://assets.mixkit.co/music/preview/mixkit-a-very-happy-christmas-897.mp3',
+];
+
 const GIFS = [
     '/gifs/2.gif',
     '/gifs/3.gif',
@@ -35,8 +42,11 @@ export default function PomodoroTimer() {
     const [message, setMessage] = useState<string>('');
     const [currentGif, setCurrentGif] = useState<string>(GIFS[0]);
     const [isPaused, setIsPaused] = useState(false); // New state to track explicit pause
+    const [isMusicMuted, setIsMusicMuted] = useState(false);
+    const [currentMusicIndex, setCurrentMusicIndex] = useState(0);
 
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const musicRef = useRef<HTMLAudioElement | null>(null);
 
     const pickRandomGif = useCallback(() => {
         const randomIndex = Math.floor(Math.random() * GIFS.length);
@@ -53,6 +63,36 @@ export default function PomodoroTimer() {
         }
     };
 
+    const playBackgroundMusic = useCallback(() => {
+        if (typeof window !== 'undefined' && !isMusicMuted) {
+            if (musicRef.current) {
+                musicRef.current.pause();
+            }
+            const randomIndex = Math.floor(Math.random() * FOCUS_MUSIC.length);
+            setCurrentMusicIndex(randomIndex);
+            musicRef.current = new Audio(FOCUS_MUSIC[randomIndex]);
+            musicRef.current.loop = true;
+            musicRef.current.volume = 0.3; // Set to 30% volume
+            musicRef.current.play().catch(() => console.log('Music playback blocked'));
+        }
+    }, [isMusicMuted]);
+
+    const stopBackgroundMusic = useCallback(() => {
+        if (musicRef.current) {
+            musicRef.current.pause();
+            musicRef.current = null;
+        }
+    }, []);
+
+    const toggleMusicMute = () => {
+        setIsMusicMuted(!isMusicMuted);
+        if (!isMusicMuted) {
+            stopBackgroundMusic();
+        } else if (isActive && mode === 'work') {
+            playBackgroundMusic();
+        }
+    };
+
     // Effect to toggle body class for Red/Green background
     useEffect(() => {
         if (typeof document !== 'undefined') {
@@ -63,6 +103,19 @@ export default function PomodoroTimer() {
             }
         }
     }, [isPaused]);
+
+    // Effect to control background music
+    useEffect(() => {
+        if (isActive && mode === 'work' && !isMusicMuted) {
+            playBackgroundMusic();
+        } else {
+            stopBackgroundMusic();
+        }
+
+        return () => {
+            stopBackgroundMusic();
+        };
+    }, [isActive, mode, isMusicMuted, playBackgroundMusic, stopBackgroundMusic]);
 
 
     useEffect(() => {
@@ -233,6 +286,29 @@ export default function PomodoroTimer() {
                     )}
                 </div>
             </div>
+
+            {/* Music Control Button */}
+            <button
+                className={styles.musicButton}
+                onClick={toggleMusicMute}
+                aria-label={isMusicMuted ? 'Unmute Music' : 'Mute Music'}
+                title={isMusicMuted ? 'Unmute Music' : 'Mute Music'}
+            >
+                {isMusicMuted ? (
+                    // Muted Icon
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <line x1="23" y1="9" x2="17" y2="15"></line>
+                        <line x1="17" y1="9" x2="23" y2="15"></line>
+                    </svg>
+                ) : (
+                    // Unmuted Icon
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
+                )}
+            </button>
 
             <div className={styles.message}>
                 {message}
