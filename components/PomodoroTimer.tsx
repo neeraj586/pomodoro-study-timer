@@ -161,6 +161,19 @@ export default function PomodoroTimer() {
         return "locked in";
     };
 
+    const getCharacterImage = () => {
+        if (mode === 'work') {
+            if (!isActive && timeLeft === MODES.work.time) return '/assets/frog_energy.png'; // Start: energetic
+            if (!isActive && timeLeft < MODES.work.time) return '/assets/frog_tired.png'; // Paused: tired/annoyed
+
+            // During focus: switch from focused to tired in last 20%
+            const progress = (1 - timeLeft / MODES.work.time);
+            if (progress > 0.8) return '/assets/frog_tired.png'; // Last 20%: tired
+            return '/assets/frog_focused.png'; // Main focus state
+        }
+        return '/assets/frog_melted.png'; // Break: melted
+    };
+
     const progress = (1 - timeLeft / MODES[mode].time) * 100;
     const strokeDashoffset = 955 - (955 * progress) / 100; // 955 is approx circumference
 
@@ -168,10 +181,13 @@ export default function PomodoroTimer() {
         <div className={`${styles.container} animate-fade-in ${isFlashing ? 'animate-flash-red' : ''}`}>
 
             <div className={styles.timerCircle}>
-                {/* Background GIF */}
-                {isActive && mode === 'work' && (
-                    <img src={currentGif} alt="Focus Background" className={styles.backgroundGif} />
-                )}
+                {/* Character Image */}
+                <img
+                    src={getCharacterImage()}
+                    alt="Character Status"
+                    className={styles.backgroundGif}
+                    style={{ opacity: 0.8 }}
+                />
 
                 {/* SVG Ring */}
                 <svg className={styles.progressRing}>
