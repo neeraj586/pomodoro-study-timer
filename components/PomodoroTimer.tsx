@@ -237,6 +237,12 @@ export default function PomodoroTimer() {
             setIsActive(true);
             setIsPaused(false);
             setMessage('');
+
+            // Start music immediately on user interaction (required for browser autoplay policy)
+            if (mode === 'work' && !isMusicMuted) {
+                console.log('🎵 Starting music from user click');
+                playBackgroundMusic();
+            }
         }
     };
 
