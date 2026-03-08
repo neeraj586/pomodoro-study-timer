@@ -12,12 +12,11 @@ const MODES: Record<Mode, { time: number; label: string; color: string }> = {
 };
 
 const SOUNDS = {
-    madiyan: '/assets/Trimmed_Madiyan.mp3',
-    celebration: '/assets/Celebration.mp3',
+    fahhhh: '/assets/fahhhh.mp3',
+    wow: '/assets/wow.mp3',
+    drumroll: '/assets/drumroll.mp3',
 };
 
-// Free royalty-free lofi music that allows hotlinking
-// Mixkit allows direct linking from any domain
 const FOCUS_MUSIC = [
     'https://assets.mixkit.co/music/preview/mixkit-tech-house-vibes-130.mp3',
     'https://assets.mixkit.co/music/preview/mixkit-dreaming-big-31.mp3',
@@ -25,6 +24,8 @@ const FOCUS_MUSIC = [
     'https://assets.mixkit.co/music/preview/mixkit-hip-hop-02-738.mp3',
     'https://assets.mixkit.co/music/preview/mixkit-lofi-study-112.mp3',
 ];
+
+const BREAK_MUSIC = '/assets/heavenly.mp3';
 
 const GIFS = [
     '/gifs/2.gif',
@@ -44,9 +45,7 @@ export default function PomodoroTimer() {
     const [isFlashing, setIsFlashing] = useState(false);
     const [message, setMessage] = useState<string>('');
     const [currentGif, setCurrentGif] = useState<string>(GIFS[0]);
-    const [isPaused, setIsPaused] = useState(false); // New state to track explicit pause
-    const [isMusicMuted, setIsMusicMuted] = useState(false); // Default to unmuted
-    const [currentMusicIndex, setCurrentMusicIndex] = useState(0);
+    const [isPaused, setIsPaused] = useState(false);
 
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const musicRef = useRef<HTMLAudioElement | null>(null);
@@ -57,7 +56,7 @@ export default function PomodoroTimer() {
     }, []);
 
     const playSound = (src: string) => {
-        if (typeof window !== 'undefined' && !isMusicMuted) {
+        if (typeof window !== 'undefined') {
             if (audioRef.current) {
                 audioRef.current.pause();
             }
@@ -67,50 +66,28 @@ export default function PomodoroTimer() {
     };
 
     const playBackgroundMusic = useCallback(() => {
-        console.log('🎵 playBackgroundMusic called, muted:', isMusicMuted);
-        if (!isMusicMuted && musicRef.current) {
+        if (musicRef.current) {
             const randomIndex = Math.floor(Math.random() * FOCUS_MUSIC.length);
-            setCurrentMusicIndex(randomIndex);
             musicRef.current.src = FOCUS_MUSIC[randomIndex];
             musicRef.current.load();
-            console.log('🎼 Loading track:', randomIndex, FOCUS_MUSIC[randomIndex]);
-            musicRef.current.play()
-                .then(() => console.log('✅ Music playing!'))
-                .catch((err) => console.error('❌ Play failed:', err));
+            musicRef.current.play().catch((err) => console.error('❌ Work music failed:', err));
         }
-    }, [isMusicMuted]);
+    }, []);
+
+    const playBreakMusic = useCallback(() => {
+        if (musicRef.current) {
+            musicRef.current.src = BREAK_MUSIC;
+            musicRef.current.load();
+            musicRef.current.play().catch((err) => console.error('❌ Break music failed:', err));
+        }
+    }, []);
 
     const pauseBackgroundMusic = useCallback(() => {
         if (musicRef.current && !musicRef.current.paused) {
-            console.log('⏸️ Pausing music');
             musicRef.current.pause();
         }
     }, []);
 
-    const stopBackgroundMusic = useCallback(() => {
-        if (musicRef.current) {
-            console.log('⏹️ Stopping music');
-            musicRef.current.pause();
-            musicRef.current.currentTime = 0;
-        }
-    }, []);
-
-    const toggleMusicMute = () => {
-        const newMuteState = !isMusicMuted;
-        setIsMusicMuted(newMuteState);
-
-        if (newMuteState) {
-            // Muting - stop music
-            stopBackgroundMusic();
-        } else {
-            // Unmuting - start music if in active work mode
-            if (isActive && mode === 'work') {
-                playBackgroundMusic();
-            }
-        }
-    };
-
-    // Effect to toggle body class for Red/Green background
     useEffect(() => {
         if (typeof document !== 'undefined') {
             if (isPaused) {
@@ -121,19 +98,15 @@ export default function PomodoroTimer() {
         }
     }, [isPaused]);
 
-    // Effect to control background music
     useEffect(() => {
-        if (isActive && mode === 'work' && !isMusicMuted) {
+        if (isActive && mode === 'work') {
             playBackgroundMusic();
-        } else if (!isActive && mode === 'work' && !isMusicMuted) {
-            // Pause when timer is paused (so we can resume)
+        } else if (isActive && (mode === 'shortBreak' || mode === 'longBreak')) {
+            playBreakMusic();
+        } else if (!isActive) {
             pauseBackgroundMusic();
-        } else if (mode !== 'work') {
-            // Stop completely when not in work mode
-            stopBackgroundMusic();
         }
-    }, [isActive, mode, isMusicMuted, playBackgroundMusic, pauseBackgroundMusic, stopBackgroundMusic]);
-
+    }, [isActive, mode, playBackgroundMusic, playBreakMusic, pauseBackgroundMusic]);
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -144,15 +117,12 @@ export default function PomodoroTimer() {
                     if (prev <= 1) {
                         setIsActive(false);
 
-                        // Determine next mode
                         if (mode === 'work') {
                             const newCount = sessionsCompleted + 1;
                             setSessionsCompleted(newCount);
 
-                            // Completion logic
-                            playSound(SOUNDS.celebration);
+                            playSound(SOUNDS.wow);
 
-                            // Special message for first session
                             if (newCount === 1) {
                                 setMessage("ok that actually counts. continue.");
                             } else {
@@ -170,9 +140,12 @@ export default function PomodoroTimer() {
                                 setTimeLeft(MODES.shortBreak.time);
                             }
                         } else {
+                            playSound(SOUNDS.drumroll);
                             setMode('work');
                             setTimeLeft(MODES.work.time);
-                            pickRandomGif(); // New GIF for new focus session
+                            pickRandomGif();
+                            setMessage("drum roll... time to lock in again!");
+                            setTimeout(() => setMessage(''), 5000);
                         }
 
                         return 0;
@@ -187,9 +160,8 @@ export default function PomodoroTimer() {
 
     const toggleTimer = () => {
         if (isActive) {
-            // Interruption/Pause logic
             if (mode === 'work' && timeLeft > 0 && timeLeft < MODES.work.time) {
-                playSound(SOUNDS.madiyan);
+                playSound(SOUNDS.fahhhh);
                 setMessage('tragic focus drop.');
                 setIsFlashing(true);
                 setTimeout(() => {
@@ -198,14 +170,12 @@ export default function PomodoroTimer() {
                 }, 3000);
             }
             setIsActive(false);
-            setIsPaused(true); // Manually paused
+            setIsPaused(true);
         } else {
-            // Resuming or starting
             if (audioRef.current) {
                 audioRef.current.pause();
                 audioRef.current.currentTime = 0;
             }
-            // If starting a fresh focus session
             if (mode === 'work' && timeLeft === MODES.work.time) {
                 pickRandomGif();
             }
@@ -213,10 +183,10 @@ export default function PomodoroTimer() {
             setIsPaused(false);
             setMessage('');
 
-            // Start music immediately on user interaction (required for browser autoplay policy)
-            if (mode === 'work' && !isMusicMuted) {
-                console.log('🎵 Starting music from user click');
+            if (mode === 'work') {
                 playBackgroundMusic();
+            } else if (mode === 'shortBreak' || mode === 'longBreak') {
+                playBreakMusic();
             }
         }
     };
@@ -231,7 +201,7 @@ export default function PomodoroTimer() {
         if (mode === 'work') {
             if (!isActive && timeLeft === MODES.work.time) return "locked in";
             if (isActive) return "locked in";
-            if (!isActive && timeLeft < MODES.work.time) return "tragic focus drop"; // Paused
+            if (!isActive && timeLeft < MODES.work.time) return "tragic focus drop";
         }
         if (mode === 'shortBreak' || mode === 'longBreak') return "we move";
         return "locked in";
@@ -239,25 +209,23 @@ export default function PomodoroTimer() {
 
     const getCharacterImage = () => {
         if (mode === 'work') {
-            if (!isActive && timeLeft === MODES.work.time) return '/assets/frog_energy.png'; // Start: energetic
-            if (!isActive && timeLeft < MODES.work.time) return '/assets/frog_tired.png'; // Paused: tired/annoyed
+            if (!isActive && timeLeft === MODES.work.time) return '/assets/frog_energy.png';
+            if (!isActive && timeLeft < MODES.work.time) return '/assets/frog_tired.png';
 
-            // During focus: switch from focused to tired in last 20%
             const progress = (1 - timeLeft / MODES.work.time);
-            if (progress > 0.8) return '/assets/frog_tired.png'; // Last 20%: tired
-            return '/assets/frog_focused.png'; // Main focus state
+            if (progress > 0.8) return '/assets/frog_tired.png';
+            return '/assets/frog_focused.png';
         }
-        return '/assets/frog_melted.png'; // Break: melted
+        return '/assets/frog_melted.png';
     };
 
     const progress = (1 - timeLeft / MODES[mode].time) * 100;
-    const strokeDashoffset = 955 - (955 * progress) / 100; // 955 is approx circumference
+    const strokeDashoffset = 955 - (955 * progress) / 100;
 
     return (
         <div className={`${styles.container} animate-fade-in ${isFlashing ? 'animate-flash-red' : ''}`}>
 
             <div className={styles.timerCircle}>
-                {/* Character Image */}
                 <img
                     src={getCharacterImage()}
                     alt="Character Status"
@@ -265,43 +233,37 @@ export default function PomodoroTimer() {
                     style={{ opacity: 0.8 }}
                 />
 
-                {/* SVG Ring */}
                 <svg className={styles.progressRing}>
                     <circle
                         className={styles.progressPath}
                         cx="152"
                         cy="152"
                         r="150"
-                        stroke="#fff" /* Made white for better visibility on green/red */
+                        stroke="#fff"
                         strokeDasharray="955"
                         strokeDashoffset={strokeDashoffset}
                     />
                 </svg>
 
-                {/* Content Overlay */}
                 <div className={styles.contentOverlay}>
                     <span className={styles.statusText}>{getCharacterStatus()}</span>
                     <div className={styles.timerDisplay}>
                         {formatTime(timeLeft)}
                     </div>
 
-                    {/* Integrated Control Button (Icon) */}
                     <button className={styles.iconButton} onClick={toggleTimer} aria-label={isActive ? 'Pause' : 'Start'}>
                         {isActive ? (
-                            // Pause Icon
                             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <rect x="6" y="4" width="4" height="16"></rect>
                                 <rect x="14" y="4" width="4" height="16"></rect>
                             </svg>
                         ) : (
-                            // Play Icon
                             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <polygon points="5 3 19 12 5 21 5 3"></polygon>
                             </svg>
                         )}
                     </button>
 
-                    {/* Session Counter Small */}
                     {sessionsCompleted > 0 && (
                         <div style={{ fontSize: '0.7rem', opacity: 0.8, marginTop: '0.5rem' }}>
                             DONE: {sessionsCompleted}
@@ -310,41 +272,14 @@ export default function PomodoroTimer() {
                 </div>
             </div>
 
-            {/* Music Control Button */}
-            <button
-                className={styles.musicButton}
-                onClick={toggleMusicMute}
-                aria-label={isMusicMuted ? 'Unmute Music' : 'Mute Music'}
-                title={isMusicMuted ? 'Unmute Music' : 'Mute Music'}
-            >
-                {isMusicMuted ? (
-                    // Muted Icon
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                        <line x1="23" y1="9" x2="17" y2="15"></line>
-                        <line x1="17" y1="9" x2="23" y2="15"></line>
-                    </svg>
-                ) : (
-                    // Unmuted Icon
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                    </svg>
-                )}
-            </button>
-
             <div className={styles.message}>
                 {message}
             </div>
 
-            {/* Hidden audio element for background music */}
             <audio
                 ref={musicRef}
                 loop
                 style={{ display: 'none' }}
-                onLoadedData={() => console.log('🎵 Audio loaded')}
-                onPlay={() => console.log('▶️ Audio playing')}
-                onPause={() => console.log('⏸️ Audio paused')}
                 onError={(e) => console.error('❌ Audio error:', e)}
             />
         </div>
