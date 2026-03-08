@@ -120,7 +120,7 @@
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-.musicButton {
+.settingsButton {
     position: fixed;
     top: 2rem;
     right: 2rem;
@@ -139,12 +139,12 @@
     backdrop-filter: blur(10px);
 }
 
-.musicButton:hover {
+.settingsButton:hover {
     background: rgba(0, 0, 0, 0.7);
     border-color: rgba(255, 255, 255, 0.5);
-    transform: scale(1.1);
+    transform: rotate(30deg) scale(1.1);
 }
 
-.musicButton svg {
+.settingsButton svg {
     display: block;
 }
