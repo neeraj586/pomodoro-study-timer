@@ -8,13 +8,13 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "FocusFlow | Pomodoro Study Timer",
+  title: "Padippi | Pomodoro Study Timer",
   description: "A premium, distraction-free Pomodoro timer designed for deep work and study.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "FocusFlow",
+    title: "Padippi",
   },
 };
 

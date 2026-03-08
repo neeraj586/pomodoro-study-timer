@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.padippi.focusflow',
-  appName: 'FocusFlow',
+  appName: 'Padippi',
   webDir: 'out'
 };
 

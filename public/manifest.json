@@ -1,6 +1,6 @@
 {
-  "name": "FocusFlow - Pomodoro Timer",
-  "short_name": "FocusFlow",
+  "name": "Padippi - Pomodoro Timer",
+  "short_name": "Padippi",
   "description": "A Pomodoro study timer for teens",
   "start_url": "/",
   "display": "standalone",
